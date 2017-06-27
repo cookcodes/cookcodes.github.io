@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Android图形系统架构（Vulkan） | 咕嘟代码</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/app.css">
+  <!-- <link rel='stylesheet' href='http://fonts.useso.com/css?family=Source+Code+Pro'> -->
+  
+</head>
+
+<body>
+  <nav class="app-nav">
+  
+    
+      <a href="/.">home</a>
+    
+  
+    
+      <a href="/archives">archive</a>
+    
+  
+    
+      <a href="/atom.xml">rss</a>
+    
+  
+</nav>
+
+  <main class="post">
+  <article>
+  <h1 class="article-title">
+    <a href="/2017/06/27/androidgraphicvulkan/">Android图形系统架构（Vulkan）</a>
+  </h1>
+
+  <section class="article-meta">
+    <p class="article-date">June 27 2017</p>
+  </section>
+
+  <section class="article-entry">
+    <p>译自：<a href="https://source.android.com/devices/graphics/arch-vulkan" target="_blank" rel="external">https://source.android.com/devices/graphics/arch-vulkan</a></p>
+<!-- toc -->
+<ul>
+<li><a href="#vulkan">Vulkan</a><ul>
+<li><a href="#vulkan组件">Vulkan组件</a></li>
+<li><a href="#修改了的组件">修改了的组件</a></li>
+<li><a href="#vulkan-api">Vulkan API</a></li>
+<li><a href="#资源">资源</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+<h1 id="vulkan"><a href="#Vulkan" class="headerlink" title="Vulkan"></a>Vulkan</h1><p>Android 7.0增加了对Vulkan的支持， Vulkan是用于高性能3D图形的低开销、跨平台的API。像OpenGL ES一样，Vulkan提供了应用程序创建高质量，实时图形的工具。Vulkan优势包括降低CPU开销并支持 <a href="https://www.khronos.org/spir" target="_blank" rel="external">SPIR-V Binary Intermediate</a> 语言。</p>
+<p>片上系统（SoC） 供应商如GPU独立硬件供应商（IHV）可以为Android编写Vulkan驱动程序;  OEM只需要为特定设备集成这些驱动程序。有关Vulkan驱动程序如何与系统进行交互的详细信息，如何安装GPU特定工具，以及Android特定的要求，请参阅<a href="https://source.android.com/devices/graphics/implement-vulkan.html" target="_blank" rel="external">Vulkan实现</a>。</p>
+<p>应用程序开发人员可以利用Vulkan来创建应用程序，应用程序在GPU上执行命令，能大大减少开销。 Vulkan还提供了当前图形硬件功能的更直观映射，能最大程度地减少驱动程序错误，并减少开发人员测试时间（比如用更少的时间来解决Vulkan错误）。</p>
+<p>有关Vulkan的一般信息，请参阅<a href="http://khr.io/vulkanlaunchoverview" target="_blank" rel="external">Vulkan概述</a>或查看下面的资源列表。</p>
+<h2 id="vulkan组件"><a href="#Vulkan组件" class="headerlink" title="Vulkan组件"></a>Vulkan组件</h2><p>Vulkan的支持包括以下组件：</p>
+<p><img src="androidgraphicvulkan/image1.png" alt=""></p>
+<p>图1：Vulkan组件</p>
+<ul>
+<li><p><strong>Vulkan验证层</strong> （ 在Android NDK中提供）。开发人员在开发Vulkan应用程序时使用的一组库。 来自图形供应商的Vulkan Runtime和Vulkan驱动程序不包含运行时错误检查，以确保Vulkan运行效率。 相反，用验证库（仅在开发过程中）来查找应用程序在使用Vulkan API过程中发生的错误。 在开发过程中 ，Vulkan验证库链接到应用程序中，并执行错误检查。在找到所有API使用的问题之后，应用程序不再需要包含这些库。</p>
+</li>
+<li><p><strong>Vulkan Runtime</strong> （由Android提供）。一个本地库(libvulkan.so），提供了一个名为Vulkan的新的公共API。它的大多数功能由GPU供应商提供的驱动程序实现; 该库封装了驱动程序，并提供API拦截功能（用于调试和其他开发工具），该库也管理驱动程序和平台依赖关系（如BufferQueue）之间的交互。</p>
+</li>
+<li><p><strong>Vulkan 驱动程序</strong>（由SoC提供）。将Vulkan API映射到特定于硬件的GPU命令，并和内核图形驱动程序交互。</p>
+</li>
+</ul>
+<h2 id="修改了的组件"><a href="#修改了的组件" class="headerlink" title="修改了的组件"></a>修改了的组件</h2><p>Android 7.0 修改了以下现有的图形组件以支持Vulkan：</p>
+<ul>
+<li><p><strong>BufferQueue</strong> Vulkan Runtime通过已有的ANativeWindow接口与现有的BufferQueue组件进行交互。修改包括对ANativeWindow和BufferQueue的小修改（新枚举值和新方法），没有系统架构方面的修改。</p>
+</li>
+<li><p><strong>Gralloc HAL</strong> 包括了一个新的、可选的接口，用于发现一个给定格式是否可以用于特定的生产者/消费者组合，同时并不实际分配缓冲区。</p>
+</li>
+</ul>
+<p>有关这些组件的详细信息，请参阅 BufferQueue和gralloc （有关ANativeWindow详细信息，请参阅 EGLSurface和OpenGL ES）。</p>
+<h2 id="vulkan-api"><a href="#Vulkan-API" class="headerlink" title="Vulkan API"></a>Vulkan API</h2><p>Android平台包括了来源于Khronos集团的<a href="https://www.khronos.org/vulkan/" target="_blank" rel="external">Vulkan API规范</a>中的<a href="https://developer.android.com/ndk/guides/graphics/index.html" target="_blank" rel="external">Android特定实现</a>。 Android应用程序必须使用<a href="https://source.android.com/devices/graphics/implement-vulkan.html#wsi" target="_blank" rel="external">窗口系统集成（WSI）扩展</a>以输出其渲染。</p>
+<h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><p>有关Vulkan的更多信息，可通过以下资源了解：</p>
+<ul>
+<li><p><strong><a href="https://android.googlesource.com/platform/frameworks/native/+/master/vulkan/#" target="_blank" rel="external">Vulkan Loader</a></strong> （libvulkan.so）在platform/frameworks/native/vulkan 。 包含了Android的Vulkan加载程序，以及一些适用于平台开发人员的和Vulkan有关的工具。</p>
+</li>
+<li><p><strong><a href="https://android.googlesource.com/platform/frameworks/native/+/master/vulkan/doc/implementors_guide/implementors_guide.html" target="_blank" rel="external">Vulkan 实现指南</a></strong> 旨在指导GPU IHV如何编写适用于Android的Vulkan驱动程序，以及OEM如何将这些驱动程序集成到特定设备。它描述了Vulkan驱动程序如何与系统进行交互，如何安装GPU特定工具，以及Android特定的要求。</p>
+</li>
+<li><p><strong><a href="https://developer.android.com/ndk/guides/graphics/index.html" target="_blank" rel="external">Vulkan Graphics API指南</a></strong> 包括有关在Android应用程序如何开始 使用Vulkan的信息，有关Android平台上Vulkan设计指南的详细信息，如何使用Vulkan的着色器编译器，以及如何使用验证层来确保使用Vulkan的应用程序的稳定性。</p>
+</li>
+<li><p><strong><a href="https://www.khronos.org/#slider_vulkan" target="_blank" rel="external">Vulkan新闻</a></strong> 涵盖事件，补丁，教程和更多Vulkan相关的新闻文章。</p>
+</li>
+</ul>
+
+  </section>
+</article>
+
+  <div class="sharing grid">
+  <section class="profile grid-item grid">
+    <img class="avatar" src="/images/avatar.png" alt="avatar" />
+    <div class="grid-item">
+      <p class="title"> 咕嘟代码 </p>
+      <p class="subtitle"> 细细品味，代码本来有滋有味。 </p>
+    <div>
+  </section>
+
+  <section class="share-btns">
+    <!-- <p> share it if you like it~ </p> -->
+    <a
+  class="twitter-share-button"
+  data-size="large"
+  data-via="DrakeLeung"
+  href="https://twitter.com/intent/tweet?text=译自：<a href="https://"
+>
+  Tweet
+</a>
+
+<script>
+  window.twttr = (function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0],
+    t = window.twttr || {};
+  if (d.getElementById(id)) return t;
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "https://platform.twitter.com/widgets.js";
+  js.async = true;
+  fjs.parentNode.insertBefore(js, fjs);
+
+  t._e = [];
+  t.ready = function(f) {
+    t._e.push(f);
+  };
+
+  return t;
+}(document, "script", "twitter-wjs"));
+</script>
+
+  </section>
+</div>
+
+
+  
+    
+<section class="article-comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+<script>
+  var disqus_shortname = 'CookCodes';
+  
+  var disqus_url = 'http://yoursite.com/2017/06/27/androidgraphicvulkan/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+  
+</main>
+
+</body>
+</html>
