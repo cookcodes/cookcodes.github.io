@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>百度自动驾驶平台 apollo 开源概览 | 咕嘟代码</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/app.css">
+  <!-- <link rel='stylesheet' href='http://fonts.useso.com/css?family=Source+Code+Pro'> -->
+  
+</head>
+
+<body>
+  <nav class="app-nav">
+  
+    
+      <a href="/.">home</a>
+    
+  
+    
+      <a href="/archives">archive</a>
+    
+  
+    
+      <a href="/atom.xml">rss</a>
+    
+  
+</nav>
+
+  <main class="post">
+  <article>
+  <h1 class="article-title">
+    <a href="/2017/07/06/baiduapollo/">百度自动驾驶平台 apollo 开源概览</a>
+  </h1>
+
+  <section class="article-meta">
+    <p class="article-date">July 06 2017</p>
+  </section>
+
+  <section class="article-entry">
+    <p>前不久，百度说要把自动驾驶平台apollo开源，要做自动驾驶平台的Android。现在，终于看到百度release的1.0版本的代码了。不过，核心的部分仍没有开源。百度说是会在年底之前开源。</p>
+<p>开源使用的是apache 2.0 license，和Android一样。其它厂家使用这些代码不存在法律上的风险。</p>
+<p>apollo开源的网址：<br><a href="https://github.com/ApolloAuto" target="_blank" rel="external">https://github.com/ApolloAuto</a></p>
+<p>已经开源的部分，见下图实框部分，虚框部分都尚未开源。camera，lidar，radar，planning，perception什么的都尚未开源</p>
+<p><img src="baiduapollo/apollo1.jpg" alt=""></p>
+<h1 id="自动驾驶平台硬件"><a href="#自动驾驶平台硬件" class="headerlink" title="自动驾驶平台硬件"></a>自动驾驶平台硬件</h1><p><a href="https://github.com/ApolloAuto/apollo/blob/master/docs/quickstart/apollo_1_0_hardware_system_installation_guide.md" target="_blank" rel="external">Apollo 1.0的硬件</a>包括：</p>
+<ul>
+<li><p><strong>工控机</strong>作为主计算系统 Onboard computer system ─ Neousys Nuvo-5095GC</p>
+<ul>
+<li>Intel Skylake core i7-6700 CPU</li>
+<li>32GB DDR4 RAM</li>
+<li>MezIO-V20-EP module (with ignition control for in-vehicle usage)</li>
+<li>PO-160W-OW 160W AC/DC power adapter</li>
+<li>CSM2 module (x16 PCIe expansion Gen3 8-lane cassette)</li>
+<li>GPU卡拆了？？</li>
+</ul>
+</li>
+<li><p><strong>CAN卡</strong>用于控制汽车： Controller Area Network (CAN) Card ─ ESD CAN-PCIe/402-1</p>
+</li>
+<li><p><strong>定位系统</strong>：厘米级的定位精度 General Positioning System (GPS) and Inertial Measurement Unit (IMU)，两个选项:</p>
+<ul>
+<li>NovAtel SPN-IGM-A1</li>
+<li>NovAtel SPAN® ProPak6™ and NovAtel IMU-IGM-A1</li>
+</ul>
+</li>
+</ul>
+<h1 id="自动驾驶平台软件"><a href="#自动驾驶平台软件" class="headerlink" title="自动驾驶平台软件"></a>自动驾驶平台软件</h1><p>基于linux，不过apollo给linux打了realtime的patch，另外在其上面运行了ros（robot os），apollo也修改了ros。</p>
+<p>现在开源代码分三部分：</p>
+<ul>
+<li><p><strong>apollo</strong>：主要的代码，关键的代码在modules目录下：<br><img src="baiduapollo/apolo2.png" alt=""><br>不过核心的诸如decision，perception，planning，prediction都尚未开源。</p>
+</li>
+<li><p><strong>apollo-kernel</strong>：linux的patch，主要是realtime方面和一些驱动方面的修改。</p>
+</li>
+<li><p><strong>apollo-platform</strong>：ros的patch，主要的修改是去中心化，基于共享内存的通信，原生支持protobuf。</p>
+</li>
+</ul>
+
+  </section>
+</article>
+
+  <div class="sharing grid">
+  <section class="profile grid-item grid">
+    <img class="avatar" src="/images/avatar.png" alt="avatar" />
+    <div class="grid-item">
+      <p class="title"> 咕嘟代码 </p>
+      <p class="subtitle"> 细细品味，代码本来有滋有味。 </p>
+    <div>
+  </section>
+
+  <section class="share-btns">
+    <!-- <p> share it if you like it~ </p> -->
+    <a
+  class="twitter-share-button"
+  data-size="large"
+  data-via="DrakeLeung"
+  href="https://twitter.com/intent/tweet?text=前不久，百度说要把自动驾驶平台apoll"
+>
+  Tweet
+</a>
+
+<script>
+  window.twttr = (function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0],
+    t = window.twttr || {};
+  if (d.getElementById(id)) return t;
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "https://platform.twitter.com/widgets.js";
+  js.async = true;
+  fjs.parentNode.insertBefore(js, fjs);
+
+  t._e = [];
+  t.ready = function(f) {
+    t._e.push(f);
+  };
+
+  return t;
+}(document, "script", "twitter-wjs"));
+</script>
+
+  </section>
+</div>
+
+
+  
+    
+<section class="article-comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+<script>
+  var disqus_shortname = 'CookCodes';
+  
+  var disqus_url = 'http://yoursite.com/2017/07/06/baiduapollo/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+  
+</main>
+
+</body>
+</html>
